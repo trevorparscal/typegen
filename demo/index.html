@@ -1,0 +1,76 @@
+<!doctype html>
+
+<html>
+	<head>
+		<title>TypeGen Demo</title>
+		<link href="../modules/jquery/smoothness/jquery-ui-1.9.2.min.css" rel="stylesheet">
+		<script src="../modules/jquery/jquery-1.8.3.min.js"></script>
+		<script src="../modules/jquery/jquery-ui-1.9.2.min.js"></script>
+		<script src="../modules/raphael/raphael-min.js"></script>
+		<script src="../modules/tg/tg.js"></script>
+		<script src="../modules/tg/tg.Glyph.js"></script>
+		<script src="../modules/tg/tg.Font.js"></script>
+		<style>
+			body {
+				background-color: #f3f3f3;
+			}
+			svg {
+				border: solid 1px #ccc;
+				background-color: #fff;
+			}
+			#params {
+				position: absolute;
+				width: 400px;
+				height: 400px;
+				left: 440px;
+				top: 20px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="params">
+			<dl>
+				<dt>Obliqueness</dt>
+				<dd><div id="param-obliqueness"></div></dd>
+				<dt>Width</dt>
+				<dd><div id="param-width"></div></dd>
+			</dl>
+		</div>
+		<script>
+			var key,
+				paper = Raphael( 20, 20, 400, 400 ).setViewBox( -0.5, -0.5, 2, 2, true )
+				font = new tg.Font(),
+				glyph = font.getGlyph( 'A' );
+
+			function update() {
+				paper.clear();
+				paper.path( glyph.getPath() )
+					.attr( 'stroke', 'black' )
+					.attr( 'stroke-width', '5' );
+			}
+
+			$( '#param-obliqueness' ).slider( {
+				'value': 0,
+				'min': -0.5,
+				'max': 0.5,
+				'step': 0.01,
+				'slide': function ( event, ui ) {
+					font.setParam( 'obliqueness', ui.value );
+					update();
+				}
+			} );
+			$( '#param-width' ).slider( {
+				'value': 1,
+				'min': 0,
+				'max': 2,
+				'step': 0.01,
+				'slide': function ( event, ui ) {
+					font.setParam( 'width', ui.value );
+					update();
+				}
+			} );
+
+			update();
+		</script>
+	</body>
+</html>
