@@ -3,7 +3,7 @@
  *
  */
 tg.Font = function () {
-	this.params = tg.createObject( this.constructor.static.defaultParams );
+	this.params = tg.createObject( this.constructor.static.defaults );
 };
 
 /* Static Properties */
@@ -18,17 +18,41 @@ tg.Font.static.models = {
 			[ 1, 1 ]
 		],
 		'strokes': [
-			[ 0, 1 ],
-			[ 1, 2 ],
-			[ 0.5, 1.5 ]
+			[ 'diagonal-stroke', 0, 1 ],
+			[ 'diagonal-stroke', 1, 2 ],
+			[ 'crossbar', 0.5, 1.5 ]
 		]
 	}
 };
 
-tg.Font.static.defaultParams = {
-	'weight': 1,
+tg.Font.static.params = {
+	'weight': {
+		'min': 0,
+		'max': 0.2,
+		'step': 0.001,
+	},
+	'obliqueness': {
+		'min': -1,
+		'max': 1,
+		'step': 0.01,
+	},
+	'width': {
+		'min': 0,
+		'max': 2,
+		'step': 0.01
+	},
+	'crossbarHeight': {
+		'min': -0.5,
+		'max': 0.5,
+		'step': 0.01
+	}
+};
+
+tg.Font.static.defaults = {
+	'weight': 0.1,
 	'obliqueness': 0,
-	'width': 1
+	'width': 1,
+	'crossbarHeight': 0
 };
 
 /* Methods */
@@ -48,27 +72,30 @@ tg.Font.prototype.getModel = function ( character ) {
 	return null;
 };
 
-tg.Font.prototype.transformPoint = function ( point ) {
-	point = point.slice( 0 );
-	if ( this.params.obliqueness !== 0 ) {
-		// Shear X (x = x + shear * y)
-		point[0] += this.params.obliqueness * ( 1 - point[1] );
-	}
-	if ( this.params.width !== 1 ) {
-		// Scale X (x = x * width)
-		point[0] *= this.params.width;
-	}
-	return point;
+tg.Font.prototype.getParamNames = function () {
+	return Object.keys( this.constructor.static.params );
 };
 
-tg.Font.prototype.setParam = function ( key, value ) {
+tg.Font.prototype.setParamValue = function ( key, value ) {
 	this.params[key] = value;
 };
 
-tg.Font.prototype.getParam = function ( key ) {
+tg.Font.prototype.getParamValue = function ( key ) {
 	return this.params[key];
 };
 
 tg.Font.prototype.resetParam = function ( key ) {
 	delete this.params[key];
+};
+
+tg.Font.prototype.getParamMin = function ( key ) {
+	return this.constructor.static.params[key].min;
+};
+
+tg.Font.prototype.getParamMax = function ( key ) {
+	return this.constructor.static.params[key].max;
+};
+
+tg.Font.prototype.getParamStep = function ( key ) {
+	return this.constructor.static.params[key].step;
 };
