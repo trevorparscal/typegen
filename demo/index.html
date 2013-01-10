@@ -27,6 +27,10 @@
 				left: 460px;
 				top: 20px;
 			}
+			#reset {
+				float: right;
+				font-size: 0.9em;
+			}
 			.control {
 				padding: 0.5em;
 			}
@@ -38,6 +42,7 @@
 	<body>
 		<div id="params">
 			<h1>TypeGen Demo</h1>
+			<button id="reset">&nbsp;</button>
 			<h3>Parameters</h3>
 			<div id="controls"></div>
 		</div>
@@ -52,6 +57,20 @@
 				controls = {},
 				$controls = $( '#controls' );
 
+			$( '#reset' )
+				.button( {
+					'icons': { 'primary': 'ui-icon-cancel' },
+					'text': false
+				} )
+				.click( function () {
+					var key;
+					font.resetParams();
+					for ( key in controls ) {
+						controls[key].reset();
+					}
+					update();
+				} );
+
 			// Setup guides
 			guides
 				.push(
@@ -59,8 +78,6 @@
 					paper.path( 'M-1,-0.15L2,-0.15' ),
 					// Cap
 					paper.path( 'M-1,0L2,0' ),
-					// Mean
-					paper.path( 'M-1,0.5L2,0.5' ),
 					// Base
 					paper.path( 'M-1,1L2,1' ),
 					// Descent
@@ -74,8 +91,16 @@
 				} );
 
 			function update() {
+				var meanLine = font.getParamValue( 'meanLine' );
 				preview.remove();
 				preview.push(
+					// Mean
+					paper.path( 'M-1,' + meanLine + 'L2,' + meanLine )
+						.attr( {
+							'stroke': '#ddd',
+							'stroke-width': '0.5',
+						} ),
+					// Character
 					paper.path( glyph.getPath() )
 						.attr( {
 							'fill': 'rgba(0,0,0,0.75)',
@@ -85,11 +110,17 @@
 				);
 			}
 
-			function Control( param ) {
+			function Slider( param ) {
+				var value = font.getParamValue( param ),
+					min = font.getParamMin( param ),
+					max = font.getParamMax( param ),
+					step = ( max - min ) * 0.001;
+
 				// Properties
 				this.$ = $( '<div>' );
 				this.$label = $( '<div>' );
 				this.$slider = $( '<div>' );
+				this.initialValue = value;
 
 				// Initialization
 				this.$.addClass( 'control' );
@@ -99,10 +130,10 @@
 				this.$slider
 					.addClass( 'control-slider' )
 					.slider( {
-						'value': font.getParamValue( param ),
-						'min': font.getParamMin( param ),
-						'max': font.getParamMax( param ),
-						'step': font.getParamStep( param ),
+						'value': value,
+						'min': min,
+						'max': max,
+						'step': step,
 						'slide': function ( event, ui ) {
 							font.setParamValue( param, ui.value );
 							update();
@@ -111,8 +142,12 @@
 				this.$.append( this.$label, this.$slider );
 			};
 
+			Slider.prototype.reset = function () {
+				this.$slider.slider( 'value', this.initialValue );
+			};
+
 			for ( var i = 0, len = params.length; i < len; i++ ) {
-				control = new Control( params[i] );
+				control = new Slider( params[i] );
 				$controls.append( control.$ );
 				controls[params[i]] = control;
 			}
