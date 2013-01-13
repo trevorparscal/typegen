@@ -8,8 +8,17 @@
 		<script src="../modules/jquery/jquery-ui-1.9.2.min.js"></script>
 		<script src="../modules/raphael/raphael-min.js"></script>
 		<script src="../modules/tg/tg.js"></script>
+		<script src="../modules/tg/tg.Angle.js"></script>
+		<script src="../modules/tg/tg.Point.js"></script>
+		<script src="../modules/tg/tg.Line.js"></script>
+		<script src="../modules/tg/tg.Curve.js"></script>
+		<script src="../modules/tg/tg.Path.js"></script>
 		<script src="../modules/tg/tg.Glyph.js"></script>
 		<script src="../modules/tg/tg.Font.js"></script>
+		<script src="../modules/tg/tg.Param.js"></script>
+		<script src="../modules/tg/params/tg.ObliquenessParam.js"></script>
+		<script src="../modules/tg/params/tg.WeightParam.js"></script>
+		<script src="../modules/tg/params/tg.WidthParam.js"></script>
 		<style>
 			body {
 				background-color: #f3f3f3;
@@ -22,17 +31,19 @@
 			}
 			#params {
 				position: absolute;
-				width: 400px;
-				height: 400px;
-				left: 460px;
-				top: 20px;
+				width: 960px;
+				left: 20px;
+				top: 220px;
 			}
 			#reset {
 				float: right;
 				font-size: 0.9em;
+				margin-top: 1em;
 			}
 			.control {
-				padding: 0.5em;
+				padding: 10px;
+				width: 300px;
+				float: left;
 			}
 			.control-label {
 				margin-bottom: 0.5em;
@@ -41,19 +52,18 @@
 	</head>
 	<body>
 		<div id="params">
-			<h1>TypeGen Demo</h1>
 			<button id="reset">&nbsp;</button>
-			<h3>Parameters</h3>
+			<h2>Parameters</h2>
 			<div id="controls"></div>
 		</div>
 		<script>
 			var key, i, len, control,
-				paper = Raphael( 20, 20, 400, 400 ).setViewBox( -0.5, -0.5, 2, 2, true ),
+				paper = Raphael( 20, 20, 960, 192 ).setViewBox( -0.5, -0.5, 10, 2, true ),
 				preview = paper.set(),
 				guides = paper.set(),
 				font = new tg.Font(),
-				params = font.getParamNames(),
-				glyph = font.getGlyph( 'A' ),
+				glyphNames = font.getGlyphNames(),
+				paramNames = font.getParamNames(),
 				controls = {},
 				$controls = $( '#controls' );
 
@@ -75,13 +85,13 @@
 			guides
 				.push(
 					// Ascent
-					paper.path( 'M-1,-0.15L2,-0.15' ),
+					paper.path( 'M-1,-0.15L10,-0.15' ),
 					// Cap
-					paper.path( 'M-1,0L2,0' ),
+					paper.path( 'M-1,0L10,0' ),
 					// Base
-					paper.path( 'M-1,1L2,1' ),
+					paper.path( 'M-1,1L10,1' ),
 					// Descent
-					paper.path( 'M-1,1.3L2,1.3' ),
+					paper.path( 'M-1,1.3L10,1.3' ),
 					// Left
 					paper.path( 'M0,-1L0,2' )
 				)
@@ -91,29 +101,42 @@
 				} );
 
 			function update() {
-				var meanLine = font.getParamValue( 'meanLine' );
+				var glyph,
+					pen = 0;
+
 				preview.remove();
-				preview.push(
-					// Mean
-					paper.path( 'M-1,' + meanLine + 'L2,' + meanLine )
-						.attr( {
-							'stroke': '#ddd',
-							'stroke-width': '0.5',
-						} ),
+				for ( var i = 0, len = glyphNames.length; i < len; i++ ) {
 					// Character
-					paper.path( glyph.getPath() )
-						.attr( {
-							'fill': 'rgba(0,0,0,0.75)',
-							'stroke': 'rgb(128,128,128)',
-							'stroke-width': '1'
-						} )
-				);
+					glyph = this.font.getGlyph( glyphNames[i] );
+					preview.push(
+						paper.path( glyph.toSvgString() )
+							.transform( 'T' + pen + ',0' )
+							.attr( {
+								'fill': 'rgba(0,0,0,0.75)',
+								'stroke': 'none'
+							} )
+							.mouseover( function () {
+								this.attr( { 
+									'stroke': 'rgb(128,128,128)',
+									'stroke-width': '1'
+								} );
+							} )
+							.mouseout( function () {
+								this.attr( { 
+									'stroke': 'none'
+								} );
+							} )
+					);
+					// Letter spacing
+					pen += glyph.getWidth() + 0.2;
+				}
 			}
 
-			function Slider( param ) {
-				var value = font.getParamValue( param ),
-					min = font.getParamMin( param ),
-					max = font.getParamMax( param ),
+			function Slider( name ) {
+				var param = font.getParam( name ),
+					value = param.getValue(),
+					min = param.getMinimumValue(),
+					max = param.getMaximumValue(),
 					step = ( max - min ) * 0.001;
 
 				// Properties
@@ -126,7 +149,7 @@
 				this.$.addClass( 'control' );
 				this.$label
 					.addClass( 'control-label' )
-					.text( param );
+					.text( name );
 				this.$slider
 					.addClass( 'control-slider' )
 					.slider( {
@@ -135,7 +158,7 @@
 						'max': max,
 						'step': step,
 						'slide': function ( event, ui ) {
-							font.setParamValue( param, ui.value );
+							param.setValue( ui.value );
 							update();
 						}
 					} );
@@ -146,13 +169,14 @@
 				this.$slider.slider( 'value', this.initialValue );
 			};
 
-			for ( var i = 0, len = params.length; i < len; i++ ) {
-				control = new Slider( params[i] );
+			for ( var i = 0, len = paramNames.length; i < len; i++ ) {
+				control = new Slider( paramNames[i] );
 				$controls.append( control.$ );
-				controls[params[i]] = control;
+				controls[paramNames[i]] = control;
 			}
 
 			update();
+
 		</script>
 	</body>
 </html>
