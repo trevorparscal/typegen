@@ -86,6 +86,22 @@ tg.Point.prototype.translate = function ( x, y ) {
 };
 
 /**
+ * Get a translated point.
+ *
+ * @method
+ * @param {tg.Angle} angle Origin angle
+ * @param {number} distance Translation distance
+ * @returns {tg.Point}
+ */
+tg.Point.prototype.project = function ( angle, distance ) {
+	angle = angle.toNumber();
+	return new tg.Point(
+		distance * Math.cos( angle ) + this.x,
+		distance * Math.sin( angle ) + this.y
+	);
+};
+
+/**
  * Get a scaled point.
  *
  * @method

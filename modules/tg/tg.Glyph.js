@@ -69,13 +69,17 @@ tg.Glyph.prototype.updatePaths = function () {
 				);
 				break;
 			case 'bowl':
+				// Points
 				a = guide.getPointAtFactor( stroke.points[0] );
-				b = guide.getPointAtFactor( stroke.points[1] );
 				c = guide.getPointAtFactor( stroke.points[2] );
-				ab = new tg.Line( a, b );
-				bc = new tg.Line( b, c );
 				ac = new tg.Line( a, c );
-				axis = ac.getAngle().rotateByFactor( 0.25 );
+				axis = ac.getAngle();
+				b = guide.getPointAtFactor( stroke.points[1] )
+					// Adjust the control point acording to the offset shift
+					.project( axis, ( eoo - soo ) / 2 );
+				bc = new tg.Line( b, c );
+				ab = new tg.Line( a, b );
+				axis = axis.rotateByFactor( 0.25 );
 				flip = axis.toNumber() >= Math.PI;
 				mio = -weight - ( weight * stroke.offsets[1] );
 				moo = ( weight - ( weight * stroke.offsets[1] ) ) * -1;

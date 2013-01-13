@@ -68,6 +68,21 @@ tg.glyphs = {
 			{ 'type': 'stroke', 'points': [ 6, 0 ], 'offsets': [ -1, -1 ] }
 		]
 	},
+	'D': {
+		'points': [
+			[ 0, 1 ],
+			[ 0, 0 ],
+			[ 0.4, 0 ],
+			[ 0.8, 0.5 ],
+			[ 0.4, 1 ],
+		],
+		'strokes': [
+			{ 'type': 'stroke', 'points': [ 0, 1 ], 'offsets': [ -1, -1 ] },
+			{ 'type': 'stroke', 'points': [ 1, 2 ], 'offsets': [ -1, -1 ] },
+			{ 'type': 'bowl', 'points': [ 2, 3, 4 ], 'offsets': [ -1, -1, -1 ] },
+			{ 'type': 'stroke', 'points': [ 4, 0 ], 'offsets': [ -1, -1 ] }
+		]
+	},
 	'E': {
 		'points': [
 			[ 0.8, 0 ],
